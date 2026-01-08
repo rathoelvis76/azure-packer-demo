@@ -1,0 +1,33 @@
+
+name: Build Azure Image with Packer
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  packer-build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install Packer
+        uses: hashicorp/setup-packer@v2
+        with:
+          packer_version: 'latest'
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Initialize Packer
+        run: packer init .
+
+      - name: Validate Packer template
+        run: packer validate .
+
+      - name: Build Azure Image
+        run: packer build .
