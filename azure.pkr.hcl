@@ -54,7 +54,7 @@ source "azure-arm" "UbuntuServer_18" {
   image_offer     = "UbuntuServer"
   image_sku       = "18.04-LTS"
 
-  # vm_size = "Standard_DS1_v2"
+  # vm_size = "Standard_B2s"
 }
 
 # ---- BUILD ----
