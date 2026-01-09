@@ -33,7 +33,7 @@ variable "tenant_id" {
 
 variable "location" {
   type    = string
-  default = "eastus"
+  default = "uksouth"
 }
 
 # ---- SOURCE (builder) ----
