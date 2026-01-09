@@ -37,7 +37,7 @@ variable "location" {
 }
 
 # ---- SOURCE (builder) ----
-source "azure-arm" "UbuntuServer_18" {
+source "azure-arm" "UbuntuServer_24" {
   use_azure_cli_auth = true
   # Use variables (NOT env()) inside source/build
   subscription_id = var.subscription_id
@@ -52,14 +52,14 @@ source "azure-arm" "UbuntuServer_18" {
   os_type         = "Linux"
   image_publisher = "Canonical"
   image_offer     = "UbuntuServer"
-  image_sku       = "18.04-LTS"
+  image_sku       = "24.04-LTS"
 
   # vm_size = "Standard_B2s"
 }
 
 # ---- BUILD ----
 build {
-  sources = ["source.azure-arm.UbuntuServer_18"]
+  sources = ["source.azure-arm.UbuntuServer_24"]
 
 
   provisioner "shell" {
