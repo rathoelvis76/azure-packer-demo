@@ -51,10 +51,9 @@ source "azure-arm" "UbuntuServer_24" {
 
   os_type         = "Linux"
   image_publisher = "Canonical"
-  image_offer     = "UbuntuServer"
-  image_sku       = "24_04-lts-gen2"
-
-  # vm_size = "Standard_B2s"
+  image_offer     = "ubuntu-24_04-lts"
+  image_sku       = "server"
+  vm_size = "Standard_B2s"
 }
 
 # ---- BUILD ----
