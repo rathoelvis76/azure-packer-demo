@@ -4,30 +4,84 @@ name: Build Azure Image with Packer
 on:
   push:
     branches: [ main ]
+  workflow_dispatch:
 
 jobs:
   packer-build:
     runs-on: ubuntu-latest
+    # Keep only one build per branch running to avoid race conditions
+    concurrency:
+      group: packer-${{ github.ref }}
+      cancel-in-progress: true
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install Packer
         uses: hashicorp/setup-packer@v2
         with:
-          packer_version: 'latest'
+          # Pin to a major/minor to avoid surprises (change as you prefer)
+          packer_version: '1.11.x'
 
-      - name: Azure Login
-        uses: azure/login@v1
+      # --- Auth option A: Service principal via secret (current approach) ---
+      - name: Azure Login (SP credentials)
+        uses: azure/login@v2
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
+      # AZURE_CREDENTIALS format (JSON):
+      # {
+      #   "clientId": "<appId>",
+      #   "clientSecret": "<password>",
+      #   "subscriptionId": "<subscription_id>",
+      #   "tenantId": "<tenant_id>"
+      # }
 
-      - name: Initialize Packer
+      # --- Auth option B: OIDC (no secrets) ---
+      # Uncomment to use federated credentials with Entra ID.
+      # permissions:
+      #   id-token: write
+      #   contents: read
+      # - name: Azure Login (OIDC)
+      #   uses: azure/login@v2
+      #   with:
+      #     client-id: ${{ secrets.AZURE_CLIENT_ID }}
+      #     tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+      #     subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Cache Packer plugins
+        uses: actions/cache@v4
+        with:
+          path: ~/.config/packer/plugins
+          key: packer-${{ runner.os }}-${{ hashFiles('**/packer.lock.hcl') }}
+          restore-keys: |
+            packer-${{ runner.os }}-
+
+      - name: Format Packer files
+        run: packer fmt -check .
+
+      - name: Initialize Packer (installs/locks plugins)
         run: packer init .
 
-      - name: Validate Packer template
+      - name: Validate template
         run: packer validate .
 
-      - name: Build Azure Image
-        run: packer build .
+      - name: Build image (with timestamps and cleanup)
+        run: |
+          set -o pipefail
+          packer build -timestamp-ui -on-error=cleanup . | tee packer.log
+
+      # Optional: upload logs & manifest
+      - name: Upload Packer log
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: packer-log
+          path: packer.log
+
+      - name: Upload Packer manifest (if enabled in template)
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: packer-manifest
+          path: manifest.json
