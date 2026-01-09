@@ -37,7 +37,7 @@ variable "location" {
 }
 
 # ---- SOURCE (builder) ----
-source "azure-arm" "UbuntuServer_22" {
+source "azure-arm" "UbuntuServer_24" {
   use_azure_cli_auth = true
   # Use variables (NOT env()) inside source/build
   subscription_id = var.subscription_id
@@ -45,21 +45,21 @@ source "azure-arm" "UbuntuServer_22" {
   client_secret   = var.client_secret
   tenant_id       = var.tenant_id
 
-  managed_image_name                = "myPackerImage"
+  managed_image_name                = "myPackerImage24"
   managed_image_resource_group_name = "azure-packer-rg"
   location                          = var.location
 
   os_type         = "Linux"
   image_publisher = "Canonical"
   image_offer     = "UbuntuServer"
-  image_sku       = "22.04-LTS"
+  image_sku       = "24_04-lts-gen2"
 
   # vm_size = "Standard_B2s"
 }
 
 # ---- BUILD ----
 build {
-  sources = ["source.azure-arm.UbuntuServer_22"]
+  sources = ["source.azure-arm.UbuntuServer_24"]
 
 
   provisioner "shell" {
