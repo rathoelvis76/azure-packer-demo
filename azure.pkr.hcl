@@ -38,6 +38,7 @@ variable "location" {
 
 # ---- SOURCE (builder) ----
 source "azure-arm" "UbuntuServer_18" {
+  use_azure_cli_auth = true
   # Use variables (NOT env()) inside source/build
   subscription_id = var.subscription_id
   client_id       = var.client_id
